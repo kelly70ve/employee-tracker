@@ -1,5 +1,6 @@
 var mysql = require("mysql");
 var inquirer = require("inquirer");
+const cTable = require('console.table');
 
 // create the connection information for the sql database
 var connection = mysql.createConnection({
@@ -42,27 +43,28 @@ function start() {
       ]
     })
     .then((answer) => {
-      switch (true) {
-        case (answer.action === "View All Employees") :
+      console.log(answer)
+      switch (answer.action) {
+        case ("View All Employees"):
           view('');
-        case (answer.action === "View All Employees by Department"):
+        case ("View All Employees by Department"):
           departments();
-        case (answer.action === "View All Employees by Manager"):
+        case ("View All Employees by Manager"):
           console.log("View All Employees by Manager");
-        case (answer.action === "Add Employee"):
+        case ("Add Employee"):
           console.log("Add Employee");
-        case (answer.action === "Remove Employee"):
+        case ("Remove Employee"):
           console.log("Remove Employee");
-        case (answer.action === "Update Employee Role"):
+        case ("Update Employee Role"):
           console.log("Update Employee Role");
-        case (answer.action === "Update Employee Manager"):
+        case ("Update Employee Manager"):
           console.log("Update Employee Manager");
-        case (answer.action === "View All Roles"):
+        case ("View All Roles"):
           console.log("View All Roles");
-        case (answer.action === "EXIT"):
-          connection.end; // if end() then program breaks
+        case ("EXIT"):
+          connection.end(); // if end() then program breaks
       }
-    });
+    }).then(start);
 }
 
 
@@ -86,13 +88,31 @@ function view(where) {
   INNER JOIN department ON role.department_id = department.id 
   ${where}`, function(err, res) {
     if (err) throw err;
-    console.log(res);
+    console.log("\n")
+    console.table(res);
   });
 }
 
 
 
+// by Department
 
+function departments() {
+  inquirer
+    .prompt({
+      name: "department",
+      type: "list",
+      message: "Which deparment would you like to view?",
+      choices: [
+      "Sales",
+      "Accounting", 
+      "Engineering", 
+      "Legal",
+      ]
+    }).then(answer => {
+      return view(`WHERE department.name = '${answer.department}'`);
+    })
+};
 
 
 //  INSERT 
