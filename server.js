@@ -1,6 +1,7 @@
 var mysql = require("mysql");
 var inquirer = require("inquirer");
 const cTable = require('console.table');
+
 // create the connection information for the sql database
 var connection = mysql.createConnection({
   host: "localhost",
@@ -46,9 +47,9 @@ function start() {
         case ("View All Employees by Manager"):
           return manager();
         case ("Add Employee"):
-          return console.log("Add Employee");
+          return addEmployee();
         case ("Remove Employee"):
-          return console.log("Remove Employee");
+          return deleteEmployee();
         case ("Update Employee Role"):
           return console.log("Update Employee Role");
         case ("Update Employee Manager"):
@@ -86,9 +87,10 @@ function view(where) {
 
 // by Department
 function departments() {
-  connection.query( 
+  connection.query( // Pull dept names
     `SELECT name FROM department`
     ,function (err, res) {
+      if (err) throw err;
       inquirer
       .prompt({
         name: "department",
@@ -103,23 +105,108 @@ function departments() {
 
 // by Manager 
 function manager() {
-  connection.query(
+  connection.query( // pull manager names
     `SELECT
     CONCAT(first_name, ' ', last_name) AS name 
     FROM employee
     WHERE manager = TRUE`
     , function (err, res) {
+      if (err) throw err;
       inquirer
       .prompt({
         name: "manager",
         type: "list",
-        message: "Which deparment would you like to view?",
+        message: "Which manager wpuld you like to view employees for?",
         choices: res
       }).then(answer => {
         return view(`WHERE manager_name = '${answer.manager}'`);
       })
-    })
+    });
+}
+
+var managers;
+var roles;
+
+//  INSERT
+async function addEmployee(){
+  await getManagers();
+  console.log(managers);
+
+
+  await getRoles();
+  console.log(roles);
+
+}
+
+function getManagers() {
+  connection.query(
+    `SELECT
+    CONCAT(first_name, ' ', last_name) AS name,
+    id 
+    FROM employee
+    WHERE manager = TRUE;`, 
+    function(err, res) {
+      managers = res
+      return managers;
+    }
+  );
+}
+
+function getRoles() {
+  connection.query(
+    `SELECT title FROM role;`
+  ), function(err, res){
+    roles = res
+    return roles;
+  }
 }
 
 
-//  INSERT
+// // DELETE
+// function deleteEmployee() {
+//   connection.query(
+//     ` SELECT 
+//     CONCAT(first_name, ' ', last_name) AS name,
+//     id 
+//     FROM employee
+//     `
+//   , function(err, res) {
+//     if (err) throw err;
+//       inquirer
+//       .prompt({
+//         name: "employee",
+//         type: "list",
+//         message: "Which employee would you like to remove?",
+//         choices: res
+//       }).then(answer => {
+//         var employee = res.filter((employees) => {
+//           return answer.employee === employees.name
+//         });
+//         connection.query(
+//           "DELETE FROM products WHERE ?",
+//         {
+//           flavor: "strawberry"
+//         },
+//         )
+//       })
+//   });
+// }
+
+
+    // inquirer
+  // .prompt([
+  //   {name: "firstName",
+  //   type: "input",
+  //   message: "What is the employee's first name?"},
+  //   {name: "lastName",
+  //   type: "input",
+  //   message: "What is the employee's last name?"},
+  //   {name: "manager",
+  //   type: "list",
+  //   message: "Who is the employee's manager?",
+  //   choices: res }
+  // ]).then(answer => {
+  //   // var manager = res.filter((managers) => {
+  //   //   return answer.manager === managers.name
+  //   // });
+  // })
