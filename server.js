@@ -124,45 +124,73 @@ function manager() {
     });
 }
 
-var managers;
-var roles;
+
+
 
 //  INSERT
 async function addEmployee(){
-  await getManagers();
-  console.log(managers);
+  try {
+    var managers = await getManagers();
+    var roles = await getRoles();
 
-
-  await getRoles();
-  console.log(roles);
+    inquirer
+    .prompt([
+      {name: "firstName",
+      type: "input",
+      message: "What is the employee's first name?"},
+      {name: "lastName",
+      type: "input",
+      message: "What is the employee's last name?"},
+      {name: "role",
+      type: "list",
+      message: "What role will this employee be fufilling?",
+      choices: roles}, 
+      {name: "manager",
+      type: "list",
+      message: "Who is the employee's manager?",
+      choices: [managers, "This employee is the manager"]}
+    ]).then(answers => {
+      console.log(answers)
+    })
+  } catch(error) {
+    console.error(error);
+  }
 
 }
 
 function getManagers() {
-  connection.query(
-    `SELECT
-    CONCAT(first_name, ' ', last_name) AS name,
-    id 
-    FROM employee
-    WHERE manager = TRUE;`, 
-    function(err, res) {
-      managers = res
-      return managers;
-    }
-  );
+  var managers;
+
+  return new Promise(function(resolve, reject) {
+    connection.query(
+      `SELECT
+      CONCAT(first_name, ' ', last_name) AS name,
+      id 
+      FROM employee
+      WHERE manager = TRUE;`, 
+      function(err, res) {
+        managers = res
+        resolve(managers);
+      }
+    );
+  })
 }
 
 function getRoles() {
-  connection.query(
-    `SELECT title FROM role;`
-  ), function(err, res){
-    roles = res
-    return roles;
-  }
+  var roles;
+
+  return new Promise(function(resolve, reject) {
+    connection.query(
+      `SELECT title FROM role;`
+    , function(err, res){
+      roles = res
+      resolve(roles)
+    });
+  })
 }
 
 
-// // DELETE
+// DELETE
 // function deleteEmployee() {
 //   connection.query(
 //     ` SELECT 
@@ -183,30 +211,14 @@ function getRoles() {
 //           return answer.employee === employees.name
 //         });
 //         connection.query(
-//           "DELETE FROM products WHERE ?",
+//           "DELETE FROM employee WHERE ?",
 //         {
-//           flavor: "strawberry"
-//         },
-//         )
+//           id: employee[0].id
+//         }, function(err, res) {
+//           console.log(`Employee ${} `)
+//         })
 //       })
 //   });
 // }
 
 
-    // inquirer
-  // .prompt([
-  //   {name: "firstName",
-  //   type: "input",
-  //   message: "What is the employee's first name?"},
-  //   {name: "lastName",
-  //   type: "input",
-  //   message: "What is the employee's last name?"},
-  //   {name: "manager",
-  //   type: "list",
-  //   message: "Who is the employee's manager?",
-  //   choices: res }
-  // ]).then(answer => {
-  //   // var manager = res.filter((managers) => {
-  //   //   return answer.manager === managers.name
-  //   // });
-  // })
