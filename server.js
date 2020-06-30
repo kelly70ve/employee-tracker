@@ -55,14 +55,16 @@ function start() {
         case ("Update Employee Manager"):
           return console.log("Update Employee Manager");
         case ("View All Roles"):
-          return console.log("View All Roles");
+          return viewRoles();
         case ("EXIT"):
           return connection.end(); // if end() then program breaks
       }
     })
 }
 
-// VIEW 
+//***************
+// VIEW
+//***************
 function view(where) {
   connection.query(
   `SELECT
@@ -124,10 +126,27 @@ function manager() {
     });
 }
 
+// view roles
+
+function viewRoles() {
+  connection.query(
+    `SELECT * FROM role;`
+  , function(err, res){
+    if (err) throw err;
+    console.log("\n")
+    console.table(res);
+    console.log("\n")
+    console.log("\n")
+    start();
+  });
+}
 
 
 
-//  INSERT
+
+//***************
+// INSERT
+//***************
 async function addEmployee(){
   try {
     var managers = await getManagers();
@@ -192,7 +211,9 @@ function getRoles() {
 }
 
 
+//***************
 // DELETE
+//***************
 function deleteEmployee() {
   connection.query(
     ` SELECT 
