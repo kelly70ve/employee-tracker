@@ -133,6 +133,9 @@ async function addEmployee(){
     var managers = await getManagers();
     var roles = await getRoles();
 
+    console.log(managers); // This works
+    console.log(roles); // This works
+
     inquirer
     .prompt([
       {name: "firstName",
@@ -144,11 +147,11 @@ async function addEmployee(){
       {name: "role",
       type: "list",
       message: "What role will this employee be fufilling?",
-      choices: roles}, 
+      choices: roles}, // This returns an array of the same length as the managers array but says undefinied 
       {name: "manager",
       type: "list",
       message: "Who is the employee's manager?",
-      choices: [managers, "This employee is the manager"]}
+      choices: [managers, "This employee is the manager"]} 
     ]).then(answers => {
       console.log(answers)
     })
@@ -164,8 +167,7 @@ function getManagers() {
   return new Promise(function(resolve, reject) {
     connection.query(
       `SELECT
-      CONCAT(first_name, ' ', last_name) AS name,
-      id 
+      CONCAT(first_name, ' ', last_name) AS name
       FROM employee
       WHERE manager = TRUE;`, 
       function(err, res) {
@@ -191,34 +193,39 @@ function getRoles() {
 
 
 // DELETE
-// function deleteEmployee() {
-//   connection.query(
-//     ` SELECT 
-//     CONCAT(first_name, ' ', last_name) AS name,
-//     id 
-//     FROM employee
-//     `
-//   , function(err, res) {
-//     if (err) throw err;
-//       inquirer
-//       .prompt({
-//         name: "employee",
-//         type: "list",
-//         message: "Which employee would you like to remove?",
-//         choices: res
-//       }).then(answer => {
-//         var employee = res.filter((employees) => {
-//           return answer.employee === employees.name
-//         });
-//         connection.query(
-//           "DELETE FROM employee WHERE ?",
-//         {
-//           id: employee[0].id
-//         }, function(err, res) {
-//           console.log(`Employee ${} `)
-//         })
-//       })
-//   });
-// }
+function deleteEmployee() {
+  connection.query(
+    ` SELECT 
+    CONCAT(first_name, ' ', last_name) AS name,
+    id 
+    FROM employee
+    `
+  , function(err, res) {
+    if (err) throw err;
+      inquirer
+      .prompt({
+        name: "employee",
+        type: "list",
+        message: "Which employee would you like to remove?",
+        choices: res
+      }).then(answer => {
+        var employee = res.filter((employees) => {
+          return answer.employee === employees.name
+        });
+        connection.query(
+          "DELETE FROM employee WHERE ?",
+        {
+          id: employee[0].id
+        }, function(err, res) {
+          if (err) throw err;
+          console.log("\n");
+          console.log(`Employee ${answer.employee} has been deleted`);
+          console.log("\n");
+          console.log("\n");
+          start();
+        })
+      })
+  });
+}
 
 
