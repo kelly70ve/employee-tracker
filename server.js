@@ -47,13 +47,13 @@ function start() {
         case ("View All Employees by Manager"):
           return manager();
         case ("Add Employee"):
-          return addEmployee();
+          return addEmployee(); // Not Complete
         case ("Remove Employee"):
-          return deleteEmployee();
+          return deleteEmployee(); 
         case ("Update Employee Role"):
-          return console.log("Update Employee Role");
+          return updateRole(); // Not Complete
         case ("Update Employee Manager"):
-          return console.log("Update Employee Manager");
+          return updateManager(); // Not Complete
         case ("View All Roles"):
           return viewRoles();
         case ("EXIT"):
@@ -72,10 +72,11 @@ function view(where) {
   CONCAT(first_name, ' ', last_name) AS name,
   manager_id,
   title,
+  role_id,
   salary,
   department.name AS department
   FROM employee
-  INNER JOIN role ON role.id = employee.id
+  INNER JOIN role ON role.id = employee.role_id
   INNER JOIN department ON role.department_id = department.id 
   ${where}`, function (err, res) {
     if (err) throw err;
@@ -142,12 +143,10 @@ function viewRoles() {
 }
 
 
-
-
 //***************
 // INSERT
 //***************
-async function addEmployee(){
+async function addEmployee(){ // Not complete
   try {
     var managers = await getManagers();
     var roles = await getRoles();
@@ -172,7 +171,11 @@ async function addEmployee(){
       message: "Who is the employee's manager?",
       choices: [managers, "This employee is the manager"]} 
     ]).then(answers => {
-      console.log(answers)
+      console.log("\n");
+      console.log(answers);
+      console.log("\n");
+      console.log("\n");
+      start();
     })
   } catch(error) {
     console.error(error);
@@ -210,6 +213,22 @@ function getRoles() {
   })
 }
 
+function getEmployees() {
+  var employees;
+
+  return new Promise(function(resolve, reject) {
+    connection.query(
+      `SELECT 
+      CONCAT(first_name, ' ', last_name) AS name,
+      id
+      FROM employee;`
+    , function(err, res){
+      employees = res
+      resolve(employees)
+    });
+  })
+}
+
 
 //***************
 // DELETE
@@ -219,7 +238,7 @@ function deleteEmployee() {
     ` SELECT 
     CONCAT(first_name, ' ', last_name) AS name,
     id 
-    FROM employee
+    FROM employee;
     `
   , function(err, res) {
     if (err) throw err;
@@ -247,6 +266,55 @@ function deleteEmployee() {
         })
       })
   });
+}
+
+//***************
+// UPDATE
+//***************
+async function updateRole(){ // Not completed
+  var employees = await getEmployees();
+  var roles = await getRoles();
+
+  inquirer
+  .prompt([
+    {name: "employee",
+    type: "list",
+    message: "Which employee would you like to update?",
+    choices: employees},
+    {name: "role",
+    type: "list",
+    message: "Which role would you like to put them in?",
+    choices: roles}
+  ]).then(answers => {
+      console.log("\n");
+      console.log(answers);
+      console.log("\n");
+      console.log("\n");
+      start();
+    });
+}
+
+async function updateManager(){ // Not Completed
+  var employees = await getEmployees();
+  var managers = await getManagers();
+
+  inquirer
+  .prompt([
+    {name: "employee",
+    type: "list",
+    message: "Which employee would you like to update?",
+    choices: employees},
+    {name: "manager",
+    type: "list",
+    message: "Which manager would you like to assign to them?",
+    choices: managers}
+  ]).then(answers => {
+      console.log("\n");
+      console.log(answers);
+      console.log("\n");
+      console.log("\n");
+      start();
+    });
 }
 
 
